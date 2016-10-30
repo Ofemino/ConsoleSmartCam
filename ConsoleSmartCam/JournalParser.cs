@@ -163,13 +163,13 @@ namespace ConsoleSmartCam
             string[] upArr = unp.Split('\n');
             if (upArr.Any())
             {
-               
+
                 trans.TerminalType = _noParse.Mtype;
                 if (unp.Contains("CASH PRESENTED"))
                 {
-                   trans.BillPresented = 1;
+                    trans.BillPresented = 1;
                 }
-                if (unp.Contains("CASH")&& unp.Contains("TAKEN"))
+                if (unp.Contains("CASH") && unp.Contains("TAKEN"))
                 {
                     trans.BillTaken = 1;
                 }
@@ -181,9 +181,11 @@ namespace ConsoleSmartCam
                 {
                     trans.TransType = "INQUIRY";
                 }
-                if (unp.Contains("INQUIRY"))
+                if (unp.Contains("WITHDRAW"))
                 {
                     trans.TransType = "WITHDRAW";
+
+
                 }
 
 
@@ -202,6 +204,45 @@ namespace ConsoleSmartCam
                 trans.TranDate = dDate.ToString();
 
                 trans.TerminalId = dtStr[14];
+
+                for (int i = 0; i < upArr.Count(); i++)
+                {
+                    string d = upArr[i];
+                    string d1 = null;
+                    if (d.Contains("CARD NUMBER"))
+                    {
+                        string cardNo = d.Remove(0, 13).Trim();
+                        while (d.StartsWith("-------"))
+                        {
+                            d1 = upArr[i] + Environment.NewLine;
+                            break;
+                        }
+                    }
+                    if (d1 != null)
+                    {
+                        string[] d2 = d1.Split('\n');
+                        char[] tId = new[] { ' ', '\t' };
+                        string[] transId = d2[1].Split(tId);
+                        trans.TransId = transId[0];
+
+                        string transType = d2[2];
+                        if (transType != "WITHDRAW")
+                        {
+                            trans.Remark = d2[2];
+                            trans.TransType = d2[2];
+                        }
+                        else
+                        {
+                            string[] transType1 = d2[2].Split(tId);
+                            int amt = transType1.Count() - 1;
+                            trans.Amount = transType1[amt];
+                            trans.AmountDouble = Convert.ToDouble(trans.Amount.Remove(0, 3));
+                        }
+                    }
+
+                }
+
+
 
             }
 
