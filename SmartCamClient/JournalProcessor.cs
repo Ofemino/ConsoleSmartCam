@@ -116,11 +116,19 @@ namespace SmartCamClient
                 int dtRow = 0;
                 _dt = new DataTable();
                 _dt = _lineNumTa.GetData();
+                DateTime prevDateTime = new DateTime();
                 foreach (DataRow row in _dt.Rows)
                 {
                     dtRow = Convert.ToInt32(row[0].ToString());
                     prevLine = Convert.ToInt32(row["PrevLineCount"].ToString());
+                    prevDateTime = Convert.ToDateTime(row["UpdatedAt"].ToString());
                 }
+
+                if (prevDateTime.Date < DateTime.Now.Date)
+                {
+                    prevLine = 0;
+                }
+
                 if (lineCount > prevLine)
                 {
                     _lineNumTa.UpdateQuery(lineCount, DateTime.Now, dtRow);

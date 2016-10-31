@@ -4817,7 +4817,8 @@ namespace ConsoleSmartCam.ConsoleSmartCamTableAdapters {
             this._commandCollection = new global::System.Data.SqlClient.SqlCommand[3];
             this._commandCollection[0] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT        Id, RecievedText, EntryDate\r\nFROM            RecievedData";
+            this._commandCollection[0].CommandText = "SELECT        Id, RecievedText, EntryDate\r\nFROM            RecievedData\r\nORDER BY" +
+                " Id";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[1] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[1].Connection = this.Connection;
@@ -4826,8 +4827,7 @@ namespace ConsoleSmartCam.ConsoleSmartCamTableAdapters {
             this._commandCollection[1].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@id", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, 0, 0, "Id", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._commandCollection[2] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[2].Connection = this.Connection;
-            this._commandCollection[2].CommandText = "SELECT        Id, RecievedText, EntryDate\r\nFROM            RecievedData\r\nwhere id" +
-                " = @id";
+            this._commandCollection[2].CommandText = "SELECT EntryDate, Id, RecievedText FROM RecievedData WHERE (Id = @id)";
             this._commandCollection[2].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[2].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@id", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, 0, 0, "Id", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
         }

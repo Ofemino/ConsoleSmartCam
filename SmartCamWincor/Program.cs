@@ -36,7 +36,7 @@ namespace SmartCamWincor
             _journalProcessTimer.Elapsed += HandleJournalProcessTimer;
             _journalProcessTimer.Enabled = true;
 
-            _msgProcessTimer = new Timer { Interval = 1000 * 60 * 3 };
+            _msgProcessTimer = new Timer { Interval = 1000 * 60 * 4 };
             _msgProcessTimer.Elapsed += HandleMsgProcessTimer;
             _msgProcessTimer.Enabled = true;
 
@@ -47,7 +47,7 @@ namespace SmartCamWincor
 
         private static void HandleJournalProcessTimer(object sender, ElapsedEventArgs e)
         {
-           // DoProcessing();
+            DoProcessing();
         }
 
         private static void DoProcessing()

@@ -30,73 +30,86 @@ namespace ConsoleSmartCam
         private DataTable _dt;
         private RecievedDataTableAdapter _rdTa;
 
-        TransSession trans = new TransSession();
+        TransSession trans;
+        TransSession passedTrans = new TransSession();
         NoParseJournal _noParse = new NoParseJournal();
         private TransSessionTableAdapter _sessTa;
+        private DateTime dDate;
+        private string transType;
 
         public DataTable GetUnParsedMessage()
         {
-            int recId = 0;
-            int msgType = 0;
-            string unparsed = String.Empty;
-            _dt = new DataTable();
-            _rdTa = new RecievedDataTableAdapter();
-            _dt = _rdTa.GetData();
-            for (int i = 0; i < _dt.Rows.Count; i++)
+            try
             {
-                recId = Convert.ToInt32(_dt.Rows[i][0]);
-                //split and deserialize xml string
-                unparsed = _dt.Rows[i][1].ToString();
-                string[] unparsed1 = StringSplit(unparsed, "<EOF>");
-
-                foreach (var s in unparsed1)
+                int recId = 0;
+                int msgType = 0;
+                string unparsed = String.Empty;
+                _dt = new DataTable();
+                _rdTa = new RecievedDataTableAdapter();
+                _dt = _rdTa.GetData();
+                for (int i = 0; i < _dt.Rows.Count; i++)
                 {
-                    if (s != "")
+                    recId = Convert.ToInt32(_dt.Rows[i][0]);
+                    //split and deserialize xml string
+                    unparsed = _dt.Rows[i][1].ToString();
+                    if (unparsed != "" || unparsed != String.Empty || unparsed != null || Convert.ToByte())
                     {
-                        string[] s1 = s.Split('|');
-                        if (s1.Any())
+                        string[] unparsed1 = StringSplit(unparsed, "<EOF>");
+                        foreach (var s in unparsed1)
                         {
-                            MsgType = Convert.ToInt32(s1[0]);
-                            MsgValue = s1[1].ToString();
-                        }
-                        switch (MsgType)
-                        {
-                            case 1:
-                                //TODO: Images message
-                                ///ProcessImagesMsg(msg);
-                                break;
-                            case 2:
-                                //TODO: Session message
-                                ProcessSessionMsg(MsgValue, recId);
-                                break;
-                            case 3:
-                                //TODO: camera message
-                                // ProcessCameraMsg(msg);
-                                break;
-                            case 4:
-                                //TODO: Terminal Provision Message
-                                // ProcessTerminalProvisionMsg(msg);
-                                break;
-                            case 5:
-                                //TODO: ProcessCallMaintenanceMessage
-                                // ProcessMaintenanceMessage(msg);
-                                break;
+                            if (s != "")
+                            {
+                                string[] s1 = s.Split('|');
+                                if (s1.Any())
+                                {
+                                    MsgType = Convert.ToInt32(s1[0]);
+                                    MsgValue = s1[1].ToString();
+                                }
+                                switch (MsgType)
+                                {
+                                    case 1:
+                                        //TODO: Images message
+                                        ///ProcessImagesMsg(msg);
+                                        break;
+                                    case 2:
+                                        //TODO: Session message
+                                        ProcessSessionMsg(MsgValue, recId);
+                                        break;
+                                    case 3:
+                                        //TODO: camera message
+                                        // ProcessCameraMsg(msg);
+                                        break;
+                                    case 4:
+                                        //TODO: Terminal Provision Message
+                                        // ProcessTerminalProvisionMsg(msg);
+                                        break;
+                                    case 5:
+                                        //TODO: ProcessCallMaintenanceMessage
+                                        // ProcessMaintenanceMessage(msg);
+                                        break;
 
-                            default:
-                                Console.WriteLine(@"Unknown function recieved!");
-                                break;
+                                    default:
+                                        Console.WriteLine(@"Unknown function recieved!");
+                                        break;
+                                }
+                            }
                         }
                     }
+
+
                 }
+
             }
-
-
-
+            catch (Exception ex)
+            {
+                Console.WriteLine("Err reading dt : " + ex.Message);
+            }
             return null;
         }
 
-        void ParseDiebold(string unp)
+        TransSession ParseDiebold(string unp, TransSession oTrans)
         {
+            trans = oTrans;
             unp = unp.Remove(0, 9);
             string[] upArr = unp.Split('\n');
             if (upArr.Any())
@@ -155,101 +168,135 @@ namespace ConsoleSmartCam
 
 
             }
-            //return null;
+            return trans;
         }
-        void ParseWincor(string unp)
+        TransSession ParseWincor(string unp)
         {
+            trans = new TransSession();
             //unp = unp.Remove(0, 9);
             string[] upArr = unp.Split('\n');
             if (upArr.Any())
             {
-
-                trans.TerminalType = _noParse.Mtype;
-                if (unp.Contains("CASH PRESENTED"))
-                {
-                    trans.BillPresented = 1;
-                }
-                if (unp.Contains("CASH") && unp.Contains("TAKEN"))
-                {
-                    trans.BillTaken = 1;
-                }
-                if (unp.Contains("CARD") && unp.Contains("TAKEN"))
-                {
-                    //trans.CardTaken = 1;
-                }
                 if (unp.Contains("INQUIRY"))
                 {
                     trans.TransType = "INQUIRY";
+                    trans.JournalPart = unp;
+                    //trans date and time
+                    char[] dtch = new[] { ' ', '\t' };
+                    char[] dtch1 = new[] { ' ', '\\' };
+                    string[] dtStr = upArr[1].Split(dtch);
+                    string[] dtSp = dtStr[4].Split(dtch1);
+                    string year = dtSp[2], month = dtSp[1], day = dtSp[0];
+                    string time = dtStr[9];
+                    dDate = DateTime.Parse(year + "-" + month + "-" + day + " " + time);
+                    trans.TranDate = dDate.ToString();
+                    trans.TerminalId = dtStr[14];
+
+                    string[] transId = upArr[3].Split(dtch);
+                    trans.TransId = transId[0];
+
+                    for (int i = 0; i < upArr.Count(); i++)
+                    {
+                        string d = upArr[i];
+                        if (d.Contains("CARD NUMBER"))
+                        {
+                            trans.CardNo = d.Remove(0, 13).Trim();
+                        }
+                        trans.TransType = "INQUIRY";
+                        trans.Remark = trans.TransType;
+                    }
                 }
-                if (unp.Contains("WITHDRAW"))
+                else if (unp.Contains("WITHDRAW"))
                 {
-                    trans.TransType = "WITHDRAW";
+                    try
+                    {
+                        trans.TerminalType = _noParse.Mtype;
+                        if (unp.Contains("CASH PRESENTED"))
+                        {
+                            trans.BillPresented = 1;
+                        }
+                        if (unp.Contains("CASH") && unp.Contains("TAKEN"))
+                        {
+                            trans.BillTaken = 1;
+                        }
+                        if (unp.Contains("CARD") && unp.Contains("TAKEN"))
+                        {
+                            //trans.CardTaken = 1;
+                        }
+                        trans.TransType = "WITHDRAW";
+                        trans.JournalPart = unp;
+                        //note bills
+                        trans.NoteBills = upArr[2].Trim().Remove(0, 14);
+                        //trans date and time
+                        char[] dtch = new[] { ' ', '\t' };
+                        char[] dtch1 = new[] { ' ', '\\' };
+                        string[] dtStr = upArr[4].Split(dtch);
+                        string[] dtSp = dtStr[4].Split(dtch1);
+                        string year = dtSp[2], month = dtSp[1], day = dtSp[0];
+                        string time = dtStr[9];
+                        dDate = DateTime.Parse(year + "-" + month + "-" + day + " " + time);
+                        trans.SessionStartTime = dDate.Date.ToString();
+                        trans.TranDate = dDate.ToString();
+                        TerminalId = dtStr[14];
+                        trans.TerminalId = TerminalId;
 
-
+                        CardNo = upArr[5].Remove(0, 13).Trim();
+                        trans.CardNo = CardNo;
+                        string[] transId = upArr[6].Split(dtch);
+                        trans.TransId = transId[0];
+                        string[] amtArr = upArr[7].Split(dtch);
+                        trans.Amount = amtArr[amtArr.Count() - 1];
+                        trans.AmountDouble = Convert.ToDouble(trans.Amount.Remove(0, 3));
+                    }
+                    catch (Exception ex)
+                    {
+                        for (int i = 0; i < upArr.Count(); i++)
+                        {
+                            string unknown = upArr[i];
+                            if (unknown.Contains("CARD NUMBER"))
+                            {
+                                char[] dtch = new[] { ' ', '\t' };
+                                char[] dtch1 = new[] { ' ', '\\' };
+                                string[] tId = upArr[i + 1].Split(dtch);
+                                trans.TransId = tId[0];
+                                trans.TransType = "***UNKNOWN***";
+                                trans.Remark = trans.TransType;
+                                trans.JournalPart = unp;
+                                trans.TerminalType = "WINCOR";
+                            }
+                        }
+                    }
                 }
-
-
-                //note bills
-                trans.NoteBills = upArr[2].Trim().Remove(0, 14);
-
-                //trans date and time
-                char[] dtch = new[] { ' ', '\t' };
-                char[] dtch1 = new[] { ' ', '\\' };
-                string[] dtStr = upArr[4].Split(dtch);
-                string[] dtSp = dtStr[4].Split(dtch1);
-                string year = dtSp[2], month = dtSp[1], day = dtSp[0];
-                string time = dtStr[9];
-                DateTime dDate = DateTime.Parse(year + "-" + month + "-" + day + " " + time);
-                trans.SessionStartTime = dDate.Date.ToString();
-                trans.TranDate = dDate.ToString();
-
-                trans.TerminalId = dtStr[14];
-
+            }
+            else
+            {
                 for (int i = 0; i < upArr.Count(); i++)
                 {
-                    string d = upArr[i];
-                    string d1 = null;
-                    if (d.Contains("CARD NUMBER"))
+                    string unknown = upArr[i];
+                    if (unknown.Contains("CARD NUMBER"))
                     {
-                        string cardNo = d.Remove(0, 13).Trim();
-                        while (d.StartsWith("-------"))
-                        {
-                            d1 = upArr[i] + Environment.NewLine;
-                            break;
-                        }
-                    }
-                    if (d1 != null)
-                    {
-                        string[] d2 = d1.Split('\n');
-                        char[] tId = new[] { ' ', '\t' };
-                        string[] transId = d2[1].Split(tId);
-                        trans.TransId = transId[0];
+                        char[] dtch = new[] { ' ', '\t' };
+                        char[] dtch1 = new[] { ' ', '\\' };
+                        string[] tId = upArr[i + 1].Split(dtch);
+                        trans.TransId = tId[0];
+                        string[] d = unknown[i - 1].ToString().Split(dtch);
+                        string[] dtSp = d[4].Split(dtch1);
+                        string year = dtSp[2], month = dtSp[1], day = dtSp[0];
+                        string time = d[9];
+                        dDate = DateTime.Parse(year + "-" + month + "-" + day + " " + time);
+                        trans.TranDate = dDate.ToString();
 
-                        string transType = d2[2];
-                        if (transType != "WITHDRAW")
-                        {
-                            trans.Remark = d2[2];
-                            trans.TransType = d2[2];
-                        }
-                        else
-                        {
-                            string[] transType1 = d2[2].Split(tId);
-                            int amt = transType1.Count() - 1;
-                            trans.Amount = transType1[amt];
-                            trans.AmountDouble = Convert.ToDouble(trans.Amount.Remove(0, 3));
-                        }
-                    }
 
+
+                        trans.TransType = "***UNKNOWN***";
+                        trans.Remark = trans.TransType;
+                        trans.JournalPart = unp;
+                    }
                 }
 
-
-
             }
-
-
-
             trans.TerminalType = _noParse.Mtype;
-
+            return trans;
 
         }
         void ParseHyosung(string unp)
@@ -295,37 +342,38 @@ namespace ConsoleSmartCam
 
                 if (_noParse.Mtype.Contains("DIEBOLD"))
                 {
+                    trans = new TransSession();
                     trans.TerminalType = _noParse.Mtype;
                     trans.BillPresented = bp;
                     trans.BillTaken = ct;
                     trans.NoteBills = _noParse.NoteBills;
                     //trans = null;
-                    ParseDiebold(_noParse.Jpart);
+                    passedTrans = ParseDiebold(_noParse.Jpart, trans);
                 }
                 else if (_noParse.Mtype.Contains("WINCOR"))
                 {
-                    trans = new TransSession();
-                    ParseWincor(_noParse.Jpart);
-
+                    //trans = new TransSession();
+                    passedTrans = ParseWincor(_noParse.Jpart);
 
                 }
             }
 
+
             _sessTa = new TransSessionTableAdapter();
-            int insert = _sessTa.Insert(trans.TerminalId, trans.TerminalType, null, null, trans.TransType,
-                trans.NoteBills, null, null, trans.TransId, trans.BillTaken, trans.BillPresented, trans.CardNo, null,
-                null, trans.Amount, null, null, trans.JournalPart, trans.TranDate, null, null, DateTime.Now,
-                trans.Remark, null, null, null, null, null, null, null, null, null, null, null, Convert.ToDecimal(trans.AmountDouble));
-
-            trans = new TransSession();
-
-            if (insert > 0)
+            if (passedTrans.TransId != String.Empty || passedTrans.TransId != null)
             {
-                Console.WriteLine("Record insert successfull...");
-                //do delete of record from parent table
-                DeleteRecordFromTable(recId);
-            }
+                int insert = _sessTa.Insert(passedTrans.TerminalId, passedTrans.TerminalType, null, null, passedTrans.TransType,
+               passedTrans.NoteBills, null, null, passedTrans.TransId, passedTrans.BillTaken, passedTrans.BillPresented, passedTrans.CardNo, null,
+               null, passedTrans.Amount, null, null, passedTrans.JournalPart, passedTrans.TranDate, null, null, DateTime.Now,
+               passedTrans.Remark, null, null, null, null, null, null, null, null, null, null, null, Convert.ToDecimal(passedTrans.AmountDouble));
 
+                if (insert > 0)
+                {
+                    Console.WriteLine("Record insert successfull...");
+                    //do delete of record from parent table
+                    DeleteRecordFromTable(recId);
+                }
+            }
 
         }
 

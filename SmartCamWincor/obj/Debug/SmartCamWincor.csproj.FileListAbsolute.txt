@@ -1,6 +1,6 @@
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamWincor\bin\Debug\SmartCamWincor.exe.config
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamWincor\bin\Debug\SmartCamWincor.exe
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamWincor\bin\Debug\SmartCamWincor.pdb
+C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamWincor\obj\Debug\SmartCamWincor.csprojResolveAssemblyReference.cache
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamWincor\obj\Debug\SmartCamWincor.exe
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamWincor\obj\Debug\SmartCamWincor.pdb
-C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamWincor\obj\Debug\SmartCamWincor.csprojResolveAssemblyReference.cache
