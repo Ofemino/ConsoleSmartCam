@@ -17,7 +17,7 @@ namespace ConsoleSmartCam
         static void Main(string[] args)
         {
 
-            _messageProcessTimer = new Timer { Interval = 2 * 60 * 1000 };
+            _messageProcessTimer = new Timer { Interval = 3 * 60 * 1000 };
             _messageProcessTimer.Elapsed += HandleProcessTimer;
             _messageProcessTimer.Enabled = true;
 

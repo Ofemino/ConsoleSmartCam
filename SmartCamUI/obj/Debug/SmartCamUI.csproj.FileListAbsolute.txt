@@ -15,7 +15,6 @@ C:\Users\ofemi.DESKTOP-9TB67BA\Desktop\Projects\SmartCamClient\SmartCamUI\obj\De
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamUI\bin\Debug\SmartCamUI.exe.config
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamUI\bin\Debug\SmartCamUI.exe
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamUI\bin\Debug\SmartCamUI.pdb
-C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamUI\obj\Debug\SmartCamUI.csprojResolveAssemblyReference.cache
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamUI\obj\Debug\SmartCamUI.frmConfig.resources
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamUI\obj\Debug\SmartCamUI.frmLogin.resources
 C:\MYPROJECTS\VS2015\ConsoleSmartCam\SmartCamUI\obj\Debug\SmartCamUI.frmMaintenance.resources
